@@ -237,7 +237,7 @@ void JsonReporter::Impl::Process(Timer& timer) {
 void
 JsonReporter::Impl::Process(Buckets& buckets)
 {
-    auto& bucketData = buckets.getBuckets();
+    auto bucketData = buckets.getBuckets();
     auto boundary_unit = FormatRateUnit(buckets.boundary_unit());
 
     out_ << "\"type\":\"buckets\"," << std::endl

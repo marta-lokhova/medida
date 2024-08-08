@@ -28,7 +28,7 @@ class Buckets : public MetricInterface
 
    virtual void Process(MetricProcessor& processor) override;
 
-   std::map<double, std::shared_ptr<Timer>> const& getBuckets();
+   std::map<double, std::shared_ptr<Timer>> getBuckets();
 
    std::chrono::nanoseconds boundary_unit() const;
    void Update(std::chrono::nanoseconds value);

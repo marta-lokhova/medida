@@ -15,6 +15,7 @@ class Buckets::Impl
     std::map<double, std::shared_ptr<Timer>> mBuckets;
     const std::chrono::nanoseconds mDurationUnit;
     std::int64_t mDurationUnitNanos;
+    mutable std::mutex mMutex;
 
   public:
     Impl(std::set<double> const& bucketBoundaries,
@@ -23,6 +24,8 @@ class Buckets::Impl
         : mDurationUnit(duration_unit)
         , mDurationUnitNanos(duration_unit.count())
     {
+        std::lock_guard<std::mutex> lock(mMutex);
+
         for (auto b: bucketBoundaries)
         {
             auto m = std::make_shared<Timer>(duration_unit, rate_unit);
@@ -33,9 +36,11 @@ class Buckets::Impl
                            std::make_shared<Timer>(duration_unit, rate_unit)));
     }
 
-    std::map<double, std::shared_ptr<Timer>> const&
+    std::map<double, std::shared_ptr<Timer>>
     getBuckets()
     {
+        std::lock_guard<std::mutex> lock(mMutex);
+
         return mBuckets;
     }
 
@@ -47,6 +52,8 @@ class Buckets::Impl
     void
     Update(std::chrono::nanoseconds value)
     {
+        std::lock_guard<std::mutex> lock(mMutex);
+
         double v = double(value.count()) / mDurationUnitNanos;
         auto it = mBuckets.lower_bound(v);
         it->second->Update(value);
@@ -54,6 +61,8 @@ class Buckets::Impl
 
     void Clear()
     {
+        std::lock_guard<std::mutex> lock(mMutex);
+
         for (auto kv: mBuckets)
         {
             kv.second->Clear();
@@ -79,7 +88,7 @@ Buckets::Process(MetricProcessor& processor)
     processor.Process(*this);
 }
 
-std::map<double, std::shared_ptr<Timer>> const&
+std::map<double, std::shared_ptr<Timer>>
 Buckets::getBuckets()
 {
     return impl_->getBuckets();
