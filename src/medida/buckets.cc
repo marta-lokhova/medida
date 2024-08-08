@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 
 namespace medida
 {
